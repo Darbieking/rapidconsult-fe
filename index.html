@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rapid Consult — Clinical Decision Support for Nigerian Doctors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --green: #39FF14;
+    --green-dim: rgba(57,255,20,0.12);
+    --green-glow: rgba(57,255,20,0.35);
+    --bg: #080808;
+    --bg2: #0f0f0f;
+    --bg3: #151515;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #444;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ─── TYPOGRAPHY ─── */
+  h1, h2, h3, h4, .label { font-family: 'Syne', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--green); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 400;
+    transition: color 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+  }
+  .btn-primary:hover {
+    background: #fff;
+    box-shadow: 0 0 28px var(--green-glow);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 6rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse at center, rgba(57,255,20,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--green-dim);
+    border: 1px solid rgba(57,255,20,0.25);
+    border-radius: 100px;
+    padding: 0.35rem 1rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--green);
+    margin-bottom: 2rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    max-width: 900px;
+    margin-bottom: 1.75rem;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 .highlight {
+    color: var(--green);
+    position: relative;
+    display: inline-block;
+  }
+  .hero h1 .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0; right: 0;
+    height: 3px;
+    background: var(--green);
+    opacity: 0.4;
+    border-radius: 2px;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 2.75rem;
+    line-height: 1.7;
+    font-weight: 300;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted2);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 1s 0.6s ease both;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--muted2), transparent);
+    animation: scrollDrop 1.5s 1s ease infinite;
+  }
+  @keyframes scrollDrop {
+    0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+    50% { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── STATS ─── */
+  .stats {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 0;
+  }
+  .stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .stat-item {
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ─── SECTION WRAPPER ─── */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 7rem 2rem;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    max-width: 700px;
+    margin-bottom: 1.25rem;
+  }
+  .section-title .g { color: var(--green); }
+
+  .section-desc {
+    color: var(--muted);
+    max-width: 520px;
+    font-size: 1rem;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .how-section {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 4rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .step-card {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+    transition: background 0.3s;
+  }
+  .step-card:last-child { border-right: none; }
+  .step-card:hover { background: var(--bg3); }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  .step-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--green-dim);
+    border: 1px solid rgba(57,255,20,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.2rem;
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.02em;
+  }
+
+  .step-desc {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .step-connector {
+    position: absolute;
+    top: 2.5rem;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    background: var(--bg);
+    border: 1px solid var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    color: var(--green);
+    font-size: 0.6rem;
+  }
+  .step-card:last-child .step-connector { display: none; }
+
+  /* ─── CHAT MOCKUP ─── */
+  .chat-showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+    margin-top: 4rem;
+  }
+
+  .chat-window {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  .chat-header {
+    background: #0f0f0f;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .chat-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--green-dim);
+    border: 1px solid rgba(57,255,20,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+  }
+  .chat-header-info h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .chat-header-info p {
+    font-size: 0.7rem;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .chat-header-info p::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .chat-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .msg {
+    max-width: 82%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+  .msg-bot {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-user {
+    background: var(--green);
+    color: #000;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    font-weight: 500;
+  }
+  .msg-label {
+    font-size: 0.65rem;
+    color: var(--muted2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .typing {
+    display: flex;
+    gap: 3px;
+    padding: 0.75rem 1rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+  .typing span {
+    width: 5px; height: 5px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .pricing-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .pricing-card:hover {
+    border-color: rgba(57,255,20,0.3);
+    transform: translateY(-3px);
+  }
+  .pricing-card.featured {
+    border-color: rgba(57,255,20,0.4);
+    background: linear-gradient(135deg, #0f1a0f, #0f0f0f);
+  }
+
+  .pricing-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--green);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .pricing-card h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.03em;
+  }
+  .pricing-card p {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .credit-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .credit-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+  .credit-unit {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .pricing-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .credit-math {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .math-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.825rem;
+  }
+  .math-row span:first-child { color: var(--muted); }
+  .math-row span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+  }
+  .math-divider {
+    height: 1px;
+    background: var(--border);
+  }
+  .math-total span:first-child { color: var(--text); font-weight: 500; }
+  .math-total span:last-child { color: var(--green); font-weight: 600; }
+
+  /* ─── FAQ ─── */
+  .faq-section {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+  }
+
+  .faq-list {
+    margin-top: 4rem;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-item:last-child { border-bottom: none; }
+
+  .faq-q {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    text-align: left;
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: background 0.2s;
+  }
+  .faq-q:hover { background: var(--bg3); }
+  .faq-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--green);
+    font-size: 1rem;
+    transition: transform 0.3s, background 0.2s;
+  }
+  .faq-item.open .faq-icon {
+    transform: rotate(45deg);
+    background: var(--green-dim);
+  }
+
+  .faq-a {
+    display: none;
+    padding: 0 2rem 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.75;
+    font-weight: 300;
+    max-width: 680px;
+  }
+  .faq-item.open .faq-a { display: block; }
+
+  /* ─── CTA STRIP ─── */
+  .cta-strip {
+    padding: 7rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-strip::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(57,255,20,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-strip h2 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    margin-bottom: 1.25rem;
+    line-height: 1.05;
+  }
+  .cta-strip p {
+    color: var(--muted);
+    max-width: 440px;
+    margin: 0 auto 2.5rem;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .btn-lg {
+    padding: 1rem 2.25rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  footer p {
+    font-size: 0.8rem;
+    color: var(--muted2);
+  }
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--green); }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2) { border-right: none; }
+    .stat-item:nth-child(3) { border-top: 1px solid var(--border); }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .step-card:nth-child(2) { border-right: none; }
+    .step-card:nth-child(3) { border-top: 1px solid var(--border); }
+    .chat-showcase { grid-template-columns: 1fr; gap: 3rem; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+  @media (max-width: 600px) {
+    .steps-grid { grid-template-columns: 1fr; }
+    .step-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .step-connector { display: none; }
+    .stats-inner { grid-template-columns: 1fr 1fr; }
+    .nav-logo {font-size: 1rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Rapid<span>Consult</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Credits</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="https://t.me/RapidConsultbot" target="_blank" class="btn btn-primary">Open in Telegram →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-grid-lines"></div>
+
+  <div class="hero-badge">Now Live · Nigeria</div>
+
+  <h1>
+    Your Senior Colleague.<br>
+    <span class="highlight">Available 24/7.</span>
+  </h1>
+  <p class="hero-sub">
+    Evidence-based clinical decisions powered by Nigerian Standard Treatment Guidelines — right inside Telegram, wherever you're seeing patients.
+  </p>
+  <div class="hero-ctas">
+    <a href="https://t.me/RapidConsultbot" target="_blank" class="btn btn-primary btn-lg">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      Start on Telegram
+    </a>
+    <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <span class="stat-num">50+</span>
+      <span class="stat-label">Guidelines Referenced</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <span class="stat-num">&lt;5s</span>
+      <span class="stat-label">Avg. Response Time</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">Always Available</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <span class="stat-num">₦0</span>
+      <span class="stat-label">Cost to Register</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section">
+    <div class="section-label reveal">How it works</div>
+    <h2 class="section-title reveal reveal-delay-1">
+      From bedside question to<br><span class="g">clinical answer</span> in seconds.
+    </h2>
+    <p class="section-desc reveal reveal-delay-2">
+      Designed around the real workflow of a Nigerian doctor — fast, focused, and grounded in local guidelines.
+    </p>
+
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-num">// 01</div>
+        <div class="step-icon">🆕</div>
+        <h3 class="step-title">Start a New Case</h3>
+        <p class="step-desc">Tap "New Case" from your Telegram menu. The bot checks your credit balance and opens a fresh clinical session instantly.</p>
+        <div class="step-connector">›</div>
+      </div>
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">// 02</div>
+        <div class="step-icon">🗣️</div>
+        <h3 class="step-title">Describe Your Patient</h3>
+        <p class="step-desc">Type the presenting complaint in plain English or clinical shorthand. Emergency flags are detected automatically in real time.</p>
+        <div class="step-connector">›</div>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">// 03</div>
+        <div class="step-icon">🔍</div>
+        <h3 class="step-title">Answer Follow-Up Questions</h3>
+        <p class="step-desc">The bot asks 2–3 targeted questions to gather vitals, history, and red flags — just like a senior colleague would.</p>
+        <div class="step-connector">›</div>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-num">// 04</div>
+        <div class="step-icon">📋</div>
+        <h3 class="step-title">Receive Your Assessment</h3>
+        <p class="step-desc">A structured clinical assessment is generated — differential diagnoses, investigations, and treatment per Nigerian STG — in under 5 seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAT MOCKUP + VALUE PROP -->
+<section>
+  <div class="section">
+    <div class="chat-showcase">
+      <div>
+        <div class="section-label reveal">See it in action</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          Not <span class="g">generic AI.</span><br>Nigerian medicine.
+        </h2>
+        <p class="section-desc reveal reveal-delay-2" style="margin-bottom:1.75rem;">
+          Unlike generic AI chatbots, Rapid Consult is grounded exclusively in Nigerian Federal Ministry of Health Standard Treatment Guidelines — not Western protocols.
+        </p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:0.75rem;" class="reveal reveal-delay-3">
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:var(--muted);">
+            <span style="color:var(--green);margin-top:1px;">✓</span>
+            Drug dosages aligned with NAFDAC-approved formulary
+          </li>
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:var(--muted);">
+            <span style="color:var(--green);margin-top:1px;">✓</span>
+            Tropical disease differentials built in (malaria, typhoid, lassa)
+          </li>
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:var(--muted);">
+            <span style="color:var(--green);margin-top:1px;">✓</span>
+            Resource-appropriate recommendations for Nigerian PHCs
+          </li>
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:var(--muted);">
+            <span style="color:var(--green);margin-top:1px;">✓</span>
+            Runs fully on Telegram — no app download, no internet browser needed
+          </li>
+        </ul>
+      </div>
+
+      <!-- CHAT WINDOW -->
+      <div class="chat-window reveal reveal-delay-2">
+        <div class="chat-header">
+          <div class="chat-avatar">⚕️</div>
+          <div class="chat-header-info">
+            <h4>Rapid Consult</h4>
+            <p>Online · Nigerian STG v2024</p>
+          </div>
+        </div>
+        <div class="chat-body">
+          <div>
+            <div class="msg-label">Bot</div>
+            <div class="msg msg-bot">Good afternoon, Doctor. What would you like to triage? Describe your patient's presenting complaint.</div>
+          </div>
+          <div style="align-self:flex-end">
+            <div class="msg-label" style="text-align:right">You</div>
+            <div class="msg msg-user">35F with 5 days fever, headache, abdominal pain. Widal test positive 1:160.</div>
+          </div>
+          <div>
+            <div class="msg-label">Bot</div>
+            <div class="msg msg-bot">Noted. A few quick questions — any vomiting or diarrhoea? Liver tenderness on exam? Current temp reading?</div>
+          </div>
+          <div style="align-self:flex-end">
+            <div class="msg-label" style="text-align:right">You</div>
+            <div class="msg msg-user">Vomiting x2, mild RUQ tenderness, Temp 38.9°C</div>
+          </div>
+          <div>
+            <div class="msg-label">Bot</div>
+            <div class="msg msg-bot">📋 <strong>Assessment: Enteric Fever (Typhoid)</strong><br><br>Dx: Salmonella typhi — Widal titre significant, classic clinical triad.<br><br><strong>Rx (Nigerian STG):</strong> Ciprofloxacin 500mg BD × 14 days or Ceftriaxone 2g IV OD if severe.<br><br><strong>Investigations:</strong> Blood culture, LFT, FBC, Urinalysis.<br><br>Admit if signs of toxaemia or unable to tolerate oral therapy.</div>
+          </div>
+          <div class="typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING / CREDITS -->
+<section id="pricing" style="background:var(--bg2);border-top:1px solid var(--border);">
+  <div class="section">
+    <div class="section-label reveal">Credits</div>
+    <h2 class="section-title reveal reveal-delay-1">
+      Simple, transparent<br><span class="g">credit system.</span>
+    </h2>
+    <p class="section-desc reveal reveal-delay-2">
+      No monthly subscriptions. No surprise charges. Pay per case, start for free.
+    </p>
+
+    <div class="pricing-grid">
+      <!-- Starter -->
+      <div class="pricing-card reveal">
+        <div class="pricing-tag">Free to start</div>
+        <h3>Starter Credits</h3>
+        <p>Every approved doctor receives 20 free credits to begin — enough for your first 4 cases, no payment required.</p>
+        <div class="credit-display">
+          <span class="credit-num">20</span>
+          <span class="credit-unit">free credits on approval</span>
+        </div>
+        <ul class="pricing-features">
+          <li>4 complete clinical assessments included</li>
+          <li>Emergency triage included in credit cost</li>
+          <li>Full access to Nigerian STG knowledge base</li>
+          <li>Case history & transaction log in the bot</li>
+        </ul>
+        <a href="https://t.me/RapidConsultbot" target="_blank" class="btn btn-ghost" style="width:100%;justify-content:center;">Apply for Access →</a>
+      </div>
+
+      <!-- How credits work -->
+      <div class="pricing-card featured reveal reveal-delay-1">
+        <div class="pricing-tag">How credits work</div>
+        <h3>5 Credits Per Case</h3>
+        <p>Each completed clinical assessment costs 5 credits, deducted automatically when your assessment is delivered. Credits never expire.</p>
+        <div class="credit-math">
+          <div class="math-row">
+            <span>Credits per full assessment</span>
+            <span>5 credits</span>
+          </div>
+          <div class="math-divider"></div>
+          <div class="math-row">
+            <span>Starter credits (free)</span>
+            <span>20 credits</span>
+          </div>
+          <div class="math-divider"></div>
+          <div class="math-row math-total">
+            <span>Free cases to start</span>
+            <span>4 cases</span>
+          </div>
+        </div>
+        <ul class="pricing-features" style="margin-top:1.5rem;">
+          <li>Credits deducted only after assessment is complete</li>
+          <li>Low balance alert at ≤ 10 credits remaining</li>
+          <li>Top-up credits via your administrator</li>
+          <li>Credits never expire — use at your pace</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="section">
+    <div class="section-label reveal">FAQ</div>
+    <h2 class="section-title reveal reveal-delay-1">
+      Common questions<br><span class="g">answered.</span>
+    </h2>
+
+    <div class="faq-list reveal reveal-delay-2">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is this just ChatGPT with a Nigerian twist?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          No. Unlike ChatGPT, Rapid Consult's knowledge base is built exclusively from Nigerian Federal Ministry of Health Standard Treatment Guidelines. It does not hallucinate Western drug brands or dosages. Every assessment references locally-approved, evidence-based protocols — including tropical diseases, NAFDAC-listed drugs, and PHC-appropriate interventions that generic AI models simply don't have.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Who can access Rapid Consult?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          Rapid Consult is currently available to licensed Nigerian medical doctors. After you register via Telegram, an administrator reviews and approves your account. This ensures the tool remains in the hands of qualified clinicians. Approval typically takes under 24 hours.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Does it work in areas with poor internet?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          Rapid Consult runs on Telegram, which is highly optimised for low-bandwidth environments — far lighter than any web browser. As long as you can send a Telegram message, you can get a clinical assessment. No app installation required beyond Telegram itself.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I use it for emergency cases?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          Yes. Rapid Consult automatically screens the first patient description for emergency flags. If an emergency is detected — septic shock, eclampsia, acute MI, severe malaria — the system bypasses the follow-up question phase and delivers an immediate priority response. Emergency cases still cost 5 credits.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is patient data stored or shared?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          Case sessions are stored to maintain conversation context during an active triage, and case history is available to you within the bot. Patient data is not shared with third parties. We recommend, as with any digital tool, avoiding the use of full patient names or identifiers in your case descriptions.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I get more credits?
+          <div class="faq-icon">+</div>
+        </button>
+        <div class="faq-a">
+          After your starter credits are used, you can request a top-up through your administrator or contact us via the bot. You'll receive a low-balance notification when you reach 10 credits remaining so you're never caught off-guard mid-case.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <h2 class="reveal">Start your first<br><span style="color:var(--green)">case today.</span></h2>
+  <p class="reveal reveal-delay-1">Join Nigerian doctors already using Rapid Consult. Register in under a minute — directly inside Telegram.</p>
+  <a href="https://t.me/RapidConsultbot" target="_blank" class="btn btn-primary btn-lg reveal reveal-delay-2">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+    Open Rapid Consult on Telegram
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="nav-logo" style="font-size:1rem;">Rapid<span style="color:var(--green)">Consult</span></a>
+  <p>Built for Nigerian doctors. Grounded in Nigerian medicine.</p>
+  <p>hello@rapidconsult.ng &nbsp;·&nbsp; <a href="https://t.me/RapidConsultbott" target="_blank">Telegram</a></p>
+</footer>
+
+<script>
+  // ─── SCROLL REVEAL ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ─── FAQ TOGGLE ───
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // ─── COUNTER ANIMATION ───
+  function animateCounter(el, target, suffix) {
+    let start = 0;
+    const duration = 1800;
+    const step = timestamp => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const val = Math.floor(ease * target);
+      el.textContent = val + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const nums = e.target.querySelectorAll('.stat-num');
+        nums.forEach(n => {
+          const text = n.textContent.trim();
+          if (text === '50+') { n.textContent = '0+'; animateCounter(n, 50, '+'); }
+          else if (text === '<5s') { /* keep as is */ }
+          else if (text === '24/7') { /* keep as is */ }
+          else if (text === '₦0') { /* keep as is */ }
+        });
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const statsSection = document.querySelector('.stats-inner');
+  if (statsSection) statsObserver.observe(statsSection);
+</script>
+</body>
+</html>
